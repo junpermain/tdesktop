@@ -1,0 +1,32 @@
+name: Build Telegram
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt5-default qt5-qmake qtbase5-dev-tools qttools5-dev-tools build-essential libqt5svg5-dev libqt5sql5-mysql libqt5sql5-psql libqt5sql5-odbc libqt5sql5-sqlite libqt5sql5-ibase libqt5sql5-db2 libqt5sql5-ibase libqt5sql5-oci libqt5sql5-ibase libqt5sql5-oci libqt5sql5-ibase libqt5sql5-oci libqt5sql5-ibase libqt5sql5-oci libqt5sql5-ibase libqt5sql5-oci libqt5sql5-ibase libqt5sql5-oci
+
+      - name: Build Telegram
+        run: |
+          cd tdesktop
+          qmake
+          make -j$(nproc)
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: telegram-build
+          path: tdesktop/Telegram
