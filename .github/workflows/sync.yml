@@ -5,7 +5,7 @@ on:
     - cron: '30 19 * * *'  # 每天 19:30 触发
   push:
     branches:
-      - master  # 也可以在推送时触发
+      - dev  # 也可以在推送时触发
 
 jobs:
   sync:
