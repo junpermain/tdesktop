@@ -1,0 +1,48 @@
+name: Sync Telegram Desktop
+
+on:
+  schedule:
+    - cron: '30 19 * * *'  # 每天 19:30 触发
+  push:
+    branches:
+      - master  # 也可以在推送时触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: master
+        fetch-depth: 0
+        lfs: true
+
+    - name: Set git identity
+      run: |
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+
+    - name: Fetch upstream repository
+      run: |
+        git remote add upstream https://github.com/telegramdesktop/tdesktop.git
+        git fetch upstream master
+
+    - name: Merge upstream changes
+      run: |
+        git merge upstream/master --no-commit --log
+        if [ -f ./.git/MERGE_MSG ]; then
+          mkdir ./tmp && cp ./.git/MERGE_MSG ./tmp/message
+          sed -i "1c [bot] AutoMerging: merge all upstream's changes:" ./tmp/message
+          sed -i '/^\#.*/d' ./tmp/message
+          git commit --file="./tmp/message"
+        else
+          echo "There are no changes to merge."
+        fi
+
+    - name: Push Commits
+      env:
+        DOWNSTREAM_BRANCH: master
+      run: |
+        git push origin $DOWNSTREAM_BRANCH
